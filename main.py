@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from db import engineConn
-from models import Test
+from models import Users
+from schema.users import User
 
 app = FastAPI()
 
@@ -17,11 +17,15 @@ app.add_middleware(
 engine = engineConn()
 session = engine.sessionMaker()
 
-class Item(BaseModel):
-    name: str
-    email: str
+@app.post("/login/", response_model=User)
+async def login(user: User):
+    print(user)
+    data = session.query(Users).filter(Users.email == user.email, Users.password == user.password).first()
+    
+    if data is not None:
+        return data
+    
+    raise http_exception()
 
-@app.get("/")
-async def first_get():
-    example = session.query(Test).all()
-    return example
+def http_exception():
+    return HTTPException(status_code=404, detail="url not found")
