@@ -19,13 +19,9 @@ session = engine.sessionMaker()
 
 @app.post("/login/", response_model=User)
 async def login(user: User):
-    print(user)
     data = session.query(Users).filter(Users.email == user.email, Users.password == user.password).first()
     
     if data is not None:
         return data
-    
-    raise http_exception()
-
-def http_exception():
-    return HTTPException(status_code=404, detail="url not found")
+        
+    raise HTTPException(status_code=404, detail="Please check the e-mail or password")
